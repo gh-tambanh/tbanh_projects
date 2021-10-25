@@ -1,0 +1,49 @@
+version: 2
+mergeable:
+  - when: pull_request.*, pull_request_review.*
+    name: PR Basics
+    validate:
+      - do: title
+        must_exclude:
+          regex: ^\[WIP\]|^WIP
+          message: Remove WIP from the title. Recommend using draft PRs instead.
+      - do: label
+        must_exclude:
+          regex: 'wip'
+        must_include:
+          regex: 'bug|enhancement|feature|chore'
+          message: Label this PR as a bug, enhancement, feature, or chore.
+      - do: description
+        no_empty:
+          enabled: true
+          message: Description should not be empty. Provide detail with **what** was changed, **why** it was changed, and **how** it was changed.
+      - do: title
+        must_include:
+          regex: '\[[a-zA-Z0-9]{2,6}-\d{1,7}\]'
+          regex_flag: 'none'
+          message: "Include ticket in title in square brackets (ex: [AAA-123])"
+      - do: assignee
+        max:
+          count: 5
+          message: "Isn't 5 more than enough for number of people assigned to review this PR?"
+        min:
+          count: 1
+          message: "Assign this PR to at least one person."
+  - when: pull_request.*, pull_request_review.*
+    name: PR Size
+    validate:
+      - do: size
+        ignore: ['package-lock.json', 'src/tests/__snapshots__/**', '**/*.md', '**/*.rst' ]
+        lines:
+          total:
+            count: 500
+            message: Change is very huge. Let's agree that you and I are human and we can't really comprehend more than 500 lines of changes.
+  - when: schedule.repository
+    validate:
+      - do: stale
+        days: 21
+        type: pull_request, issues
+    pass:
+      - do: comment
+        payload:
+          body: This is old. Is it still relevant?
