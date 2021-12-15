@@ -1,0 +1,40 @@
+# SQL imports and preamble, don't change
+
+import os
+import sys
+import datetime
+
+from glob import glob
+
+import numpy as np
+import pandas as pd
+import psycopg2 as pg2
+
+# Fetch db credentials
+#sys.path.append("/ghds/groups/lunar/notebooks/jkurata/gh_sample_tracker/sampletracker/sampletracker/")
+#from env import SAMP_DB_VIEW_USERNAME, SAMP_DB_VIEW_PASSWORD
+
+sys.path.append("/ghds/mrd/analyses/notebooks/jkurata/gh_sample_tracker/sampletracker/sampletracker/")
+from env import SAMP_DB_VIEW_USERNAME, SAMP_DB_VIEW_PASSWORD
+
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_colwidth', 500)
+
+def sql_query_to_df(query):
+    """Run an SQL query on the Guardant PostgreSQL server and return the
+    result as a pandas dataframe.
+    Args:
+        query (str): SQL query string.
+    Returns:
+        pandas.core.frame.DataFrame: pandas dataframe containing SQL
+        query.
+    """
+    connect = pg2.connect(host="ghbi-live-lunar-sample-metadata-db.clrdmmintk6b.us-west-2.rds.amazonaws.com",
+                          database="lunar_sample_metadata_db",
+                          user=SAMP_DB_VIEW_USERNAME,
+                          password=SAMP_DB_VIEW_PASSWORD)
+    df = pd.read_sql_query(query, connect)
+    connect.close()
+    
+    return df
